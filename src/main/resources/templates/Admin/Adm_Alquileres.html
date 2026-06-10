@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alquileres - Administrador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/menu">
+                <i class="bi bi-arrow-left-circle me-2"></i>Volver al Menú
+            </a>
+            <span class="navbar-text text-white">
+                <i class="bi bi-calendar-check me-2"></i>Administración de Alquileres
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2 class="text-dark"><i class="bi bi-calendar-event-fill text-warning me-2"></i>Control de Reservas</h2>
+                <p class="text-muted">Gestión completa de alquileres y reservas</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-success btn-lg me-2" data-bs-toggle="modal" data-bs-target="#modalNuevaReserva">
+                    <i class="bi bi-plus-circle me-2"></i>Nueva Reserva
+                </button>
+                <button class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-file-earmark-excel me-2"></i>Exportar
+                </button>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h3 th:text="${#lists.size(alquileres)}">0</h3>
+                        <p class="mb-0">Total Alquileres</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h3 th:text="${alquileresConfirmados}">0</h3>
+                        <p class="mb-0">Confirmados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h3 th:text="${alquileresPendientes}">0</h3>
+                        <p class="mb-0">Pendientes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h3 th:text="${alquileresCancelados}">0</h3>
+                        <p class="mb-0">Cancelados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <input type="date" class="form-control form-control-lg" placeholder="Fecha">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-lg">
+                    <option selected>Todos</option>
+                    <option>Confirmado</option>
+                    <option>Pendiente</option>
+                    <option>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <input type="text" class="form-control form-control-lg" placeholder="Buscar por cliente, campo, ID...">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-danger btn-lg w-100"><i class="bi bi-x-circle"></i></button>
+            </div>
+        </div>
+
+        <!-- Tabla de Alquileres -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Campo</th>
+                                <th>Fecha</th>
+                                <th>Hora Inicio</th>
+                                <th>Hora Fin</th>
+                                <th>Horas</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Mensaje si no hay alquileres -->
+                            <tr th:if="${#lists.isEmpty(alquileres)}">
+                                <td colspan="10" class="text-center text-muted py-4">
+                                    <i class="bi bi-info-circle me-2"></i>No hay alquileres registrados en el sistema.
+                                </td>
+                            </tr>
+                            
+                            <!-- Iterar sobre cada alquiler -->
+                            <tr th:each="alquiler : ${alquileres}">
+                                <td><strong>#<span th:text="${alquiler.codigoAlquiler}">001</span></strong></td>
+                                <td th:text="${alquiler.cliente.nombreCompleto}">Cliente</td>
+                                <td th:text="${alquiler.campoFutbol.nombreCampo}">Campo</td>
+                                <td th:text="${#temporals.format(alquiler.fechaAlquiler, 'dd/MM/yyyy')}">01/01/2025</td>
+                                <td th:text="${alquiler.horaInicio}">00:00</td>
+                                <td th:text="${alquiler.horaFin}">00:00</td>
+                                <td th:text="${alquiler.totalHoras}">0</td>
+                                <td><strong>S/. <span th:text="${#numbers.formatDecimal(alquiler.precioTotal, 1, 2)}">0.00</span></strong></td>
+                                <td>
+                                    <span th:if="${alquiler.estado == 'Confirmado'}" class="badge bg-success">Confirmado</span>
+                                    <span th:if="${alquiler.estado == 'Pendiente'}" class="badge bg-warning">Pendiente</span>
+                                    <span th:if="${alquiler.estado == 'Cancelado'}" class="badge bg-danger">Cancelado</span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></button>
+                                    <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Reserva -->
+    <div class="modal fade" id="modalNuevaReserva" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>Nueva Reserva de Alquiler</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Cliente (DNI)</label>
+                                <input type="text" class="form-control form-control-lg" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Campo</label>
+                                <select class="form-select form-select-lg" required>
+                                    <option value="">Seleccione...</option>
+                                    <option>Campo 001 - Fútbol Principal (S/. 80.00/hora)</option>
+                                    <option>Campo 003 - Fútbol 7 (S/. 60.00/hora)</option>
+                                    <option>Campo 004 - Multiusos (S/. 70.00/hora)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Fecha de Reserva</label>
+                                <input type="date" class="form-control form-control-lg" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Hora de Inicio</label>
+                                <input type="time" class="form-control form-control-lg" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Hora de Fin</label>
+                                <input type="time" class="form-control form-control-lg" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Total a Pagar (S/.)</label>
+                                <input type="number" class="form-control form-control-lg" step="0.01" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Estado</label>
+                                <select class="form-select form-select-lg" required>
+                                    <option value="Confirmado" selected>Confirmado</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Observaciones</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success">Crear Reserva</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes por Día - Administrador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/menu">
+                <i class="bi bi-arrow-left-circle me-2"></i>Volver al Menú
+            </a>
+            <span class="navbar-text text-white">
+                <i class="bi bi-graph-up me-2"></i>Reportes Diarios
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2 class="text-dark"><i class="bi bi-clipboard-data text-primary me-2"></i>Reportes por Día</h2>
+                <p class="text-muted">Análisis de ingresos y ocupación diaria</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-success btn-lg me-2">
+                    <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel
+                </button>
+                <button class="btn btn-outline-danger btn-lg">
+                    <i class="bi bi-file-pdf me-2"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtro de Fechas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Fecha Inicio</label>
+                <input type="date" class="form-control form-control-lg">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Fecha Fin</label>
+                <input type="date" class="form-control form-control-lg">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Rango Rápido</label>
+                <select class="form-select form-select-lg">
+                    <option>Hoy</option>
+                    <option>Últimos 7 días</option>
+                    <option>Últimos 30 días</option>
+                    <option>Este Mes</option>
+                    <option>Mes Anterior</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-search me-2"></i>Generar
+                </button>
+            </div>
+        </div>
+
+        <!-- Resumen Financiero -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body text-center">
+                        <h4><i class="bi bi-cash-coin"></i> Ingresos Totales</h4>
+                        <h2>S/. <span th:text="${#numbers.formatDecimal(ingresosTotal, 1, 2)}">0.00</span></h2>
+                        <p class="mb-0">Del periodo seleccionado</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body text-center">
+                        <h4><i class="bi bi-calendar-check"></i> Alquileres</h4>
+                        <h2 th:text="${totalAlquileres}">0</h2>
+                        <p class="mb-0">Total de reservas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white shadow">
+                    <div class="card-body text-center">
+                        <h4><i class="bi bi-graph-up-arrow"></i> Promedio Día</h4>
+                        <h2>S/. <span th:text="${#numbers.formatDecimal(promedioIngresos, 1, 2)}">0.00</span></h2>
+                        <p class="mb-0">Ingreso promedio</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white shadow">
+                    <div class="card-body text-center">
+                        <h4><i class="bi bi-people"></i> Clientes</h4>
+                        <h2 th:text="${totalClientes}">0</h2>
+                        <p class="mb-0">Clientes atendidos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Ocupación -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2"></i>Ocupación de Campos por Día</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Campo</th>
+                                        <th class="text-center">Lun</th>
+                                        <th class="text-center">Mar</th>
+                                        <th class="text-center">Mié</th>
+                                        <th class="text-center">Jue</th>
+                                        <th class="text-center">Vie</th>
+                                        <th class="text-center">Sáb</th>
+                                        <th class="text-center">Dom</th>
+                                        <th class="text-center">Total Horas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Mensaje si no hay datos -->
+                                    <tr th:if="${#lists.isEmpty(campos)}">
+                                        <td colspan="9" class="text-center text-muted py-4">
+                                            <i class="bi bi-info-circle me-2"></i>No hay datos de ocupación disponibles.
+                                        </td>
+                                    </tr>
+                                    <!-- Nota: La tabla de ocupación semanal requiere lógica compleja de agrupación -->
+                                    <!-- Se muestra mensaje informativo por ahora -->
+                                    <tr th:if="${!#lists.isEmpty(campos)}">
+                                        <td colspan="9" class="text-center text-info py-4">
+                                            <i class="bi bi-info-circle me-2"></i>Tabla de ocupación por día de la semana - Requiere implementación adicional de agrupación por día
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-success me-2">■ Alta ocupación (7-12h)</span>
+                            <span class="badge bg-warning me-2">■ Media ocupación (4-6h)</span>
+                            <span class="badge bg-danger">■ Baja ocupación (0-3h)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla Detallada de Ingresos por Día -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0"><i class="bi bi-table me-2"></i>Detalle de Ingresos Diarios</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th class="text-center">N° Alquileres</th>
+                                        <th class="text-center">Horas Totales</th>
+                                        <th class="text-center">Clientes</th>
+                                        <th class="text-end">Ingresos</th>
+                                        <th class="text-center">% Ocupación</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Mensaje si no hay alquileres -->
+                                    <tr th:if="${#lists.isEmpty(alquileresPorDia)}">
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i class="bi bi-info-circle me-2"></i>No hay alquileres en el período seleccionado.
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Agrupar alquileres por fecha y mostrar resumen -->
+                                    <tr th:each="alquiler, iterStat : ${alquileresPorDia}" 
+                                        th:if="${iterStat.index == 0 or alquiler.fechaAlquiler != alquileresPorDia[iterStat.index - 1].fechaAlquiler}">
+                                        <td>
+                                            <strong th:text="${#temporals.format(alquiler.fechaAlquiler, 'dd/MM/yyyy')}">01/01/2025</strong>
+                                            <span th:if="${#temporals.format(alquiler.fechaAlquiler, 'dd/MM/yyyy') == #temporals.format(#temporals.createToday(), 'dd/MM/yyyy')}">(Hoy)</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:text="${#lists.size(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler))}">0</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:text="${#aggregates.sum(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler).![totalHoras])}">0</span>h
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:text="${#sets.size(#lists.toSet(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler).![cliente.codigoCliente]))}">0</span>
+                                        </td>
+                                        <td class="text-end text-success fw-bold">
+                                            S/. <span th:text="${#numbers.formatDecimal(#aggregates.sum(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler).![precioTotal]), 1, 2)}">0.00</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge" 
+                                                  th:classappend="${#aggregates.sum(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler).![totalHoras]) >= 18 ? 'bg-success' : (#aggregates.sum(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler).![totalHoras]) >= 12 ? 'bg-warning' : 'bg-danger')}">
+                                                <span th:text="${#numbers.formatDecimal((#aggregates.sum(#lists.select(alquileresPorDia, #this.fechaAlquiler == alquiler.fechaAlquiler).![totalHoras]) * 100.0) / 24, 0, 0)}">0</span>%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="table-light" th:if="${!#lists.isEmpty(alquileresPorDia)}">
+                                    <tr>
+                                        <th>TOTALES</th>
+                                        <th class="text-center" th:text="${#lists.size(alquileresPorDia)}">0</th>
+                                        <th class="text-center"><span th:text="${#aggregates.sum(alquileresPorDia.![totalHoras])}">0</span>h</th>
+                                        <th class="text-center" th:text="${#sets.size(#lists.toSet(alquileresPorDia.![cliente.codigoCliente]))}">0</th>
+                                        <th class="text-end text-primary fw-bold">S/. <span th:text="${#numbers.formatDecimal(#aggregates.sum(alquileresPorDia.![precioTotal]), 1, 2)}">0.00</span></th>
+                                        <th class="text-center">—</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

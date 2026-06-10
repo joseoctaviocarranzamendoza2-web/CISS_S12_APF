@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cliente</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom Colors based on user specs */
+        .bg-teal-dark { background-color: #115e59; } /* Teal oscuro */
+        .bg-emerald-dark { background-color: #166534; } /* Verde oscuro */
+        .bg-gold-old { background-color: #b45309; } /* Naranja/Oro viejo */
+        .bg-blue-bright { background-color: #0284c7; } /* Azul brillante */
+        
+        body { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800 font-sans">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-teal-dark text-white flex flex-col transition-all duration-300">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-futbol"></i> Canchas
+            </h2>
+        </div>
+        <nav class="flex-1 mt-6">
+            <a th:href="@{/cliente/dashboard}" class="flex items-center gap-3 px-6 py-3 bg-white/10 border-l-4 border-white">
+                <i class="fas fa-th-large w-5 text-center"></i> Dashboard
+            </a>
+            <a th:href="@{/cliente/reservar}" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="far fa-calendar-alt w-5 text-center"></i> Nueva Reserva
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="fas fa-history w-5 text-center"></i> Historial de Alquileres
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="far fa-credit-card w-5 text-center"></i> Pagos
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="fas fa-cog w-5 text-center"></i> Configuración
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-semibold text-gray-700">Dashboard</h1>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="font-medium" th:text="${usuario != null ? usuario.nombreCompleto : 'Cliente'}">Dani Codex</span>
+                </div>
+                <a th:href="@{/logout}" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="p-8">
+            
+            <!-- Top Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-white">
+                
+                <!-- Card 1: Reservas (Emerald) -->
+                <div class="bg-emerald-dark rounded-xl shadow-md p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute top-4 right-4 text-white/20 text-5xl">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-dark text-xl mb-3 shadow-sm z-10">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold z-10"><span th:text="${totalReservas}">5</span> Total Reservas</h3>
+                    <p class="text-emerald-100 z-10">Este Mes</p>
+                </div>
+
+                <!-- Card 2: Próxima Reserva (Gold/Orange) -->
+                <div class="bg-gold-old rounded-xl shadow-md p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute top-4 right-4 text-white/20 text-5xl">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gold-old text-xl mb-3 shadow-sm z-10">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-center z-10">
+                        Próxima Reserva: 
+                        <span th:text="${proximaReserva != null ? proximaReserva.campoFutbol.nombreCampo : 'Ninguna'}">Cancha Fútbol 7</span>
+                    </h3>
+                    <p class="text-orange-100 z-10" th:text="${proximaReserva != null ? proximaReserva.fechaAlquiler + ' ' + proximaReserva.horaInicio : '---'}">Sábado 15/05/2026</p>
+                </div>
+
+                <!-- Card 3: Implementos (Blue) -->
+                <div class="bg-blue-bright rounded-xl shadow-md p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute top-4 right-4 text-white/20 text-5xl">
+                        <i class="fas fa-th"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-bright text-xl mb-3 shadow-sm z-10">
+                        <i class="fas fa-th"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold z-10">Total Alquileres: <span th:text="${totalImplementosAlquilados}">3</span> Implementos</h3>
+                </div>
+            </div>
+
+            <!-- Main Sections -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Left Column: Personal Data -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-1">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6 border-b pb-2">Mis Datos Personales</h3>
+                    
+                    <form th:action="@{/cliente/perfil/actualizar}" method="post" class="space-y-4">
+                        <input type="hidden" name="codigoCliente" th:value="${cliente != null ? cliente.codigoCliente : ''}">
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                            <input type="text" name="nombreCompleto" readonly th:value="${cliente != null ? cliente.nombreCompleto : ''}" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                            <input type="email" name="email" required th:value="${cliente != null ? cliente.email : ''}" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="text" name="telefono" required th:value="${cliente != null ? cliente.telefono : ''}" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                            <input type="text" name="direccion" required th:value="${cliente != null ? cliente.direccion : ''}" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Registro</label>
+                                <input type="text" readonly th:value="${cliente != null ? cliente.fechaRegistro : ''}" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cuenta</label>
+                                <div class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 flex items-center justify-center">
+                                    <span class="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium" th:text="${cliente != null ? cliente.estadoCuenta : 'Activo'}">Activo</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4 border-t mt-4">
+                            <button type="submit" class="w-full bg-teal-dark hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md shadow-sm transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Tables -->
+                <div class="lg:col-span-2 flex flex-col gap-8">
+                    
+                    <!-- Historial de Reservas -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-x-auto">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Historial de Reservas</h3>
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3 font-semibold rounded-tl-md rounded-bl-md">Fecha</th>
+                                    <th class="p-3 font-semibold">Nombre de Cancha</th>
+                                    <th class="p-3 font-semibold">Tiempo</th>
+                                    <th class="p-3 font-semibold">Estatus</th>
+                                    <th class="p-3 font-semibold rounded-tr-md rounded-br-md">Métod de Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="reserva : ${historialReservas}" class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                    <td class="p-3 text-gray-700" th:text="${reserva.fechaAlquiler}">01/01/2025</td>
+                                    <td class="p-3 text-gray-700" th:text="${reserva.campoFutbol.nombreCampo}">Cancha Fútbol 7</td>
+                                    <td class="p-3 text-gray-700" th:text="${reserva.horaInicio + ' hrs'}">15:00:00 hrs</td>
+                                    <td class="p-3">
+                                        <span th:if="${reserva.estado == 'Confirmado'}" class="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium">Completado</span>
+                                        <span th:if="${reserva.estado == 'Pendiente'}" class="bg-yellow-500 text-white text-xs px-3 py-1 rounded-full font-medium">Pendiente</span>
+                                        <span th:if="${reserva.estado == 'Cancelado'}" class="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium">Cancelado</span>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="bg-teal-500 text-white text-xs px-3 py-1 rounded-full font-medium" th:text="${reserva.metodoPago != null ? reserva.metodoPago : 'Tarjeta'}">Tarjeta</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${historialReservas == null or historialReservas.isEmpty()}">
+                                    <td colspan="5" class="p-4 text-center text-gray-500">No hay reservas registradas</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Historial de Alquileres (Implementos) -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Historial de Alquileres</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            
+                            <!-- Implemento Item -->
+                            <div th:each="alquilerImp : ${historialImplementos}" class="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-500 text-2xl">
+                                        <i th:class="${alquilerImp.implemento.nombre.toLowerCase().contains('balón') ? 'fas fa-futbol' : 'fas fa-tshirt'}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-800" th:text="${alquilerImp.implemento.nombre}">Balón Fútbol 7</h4>
+                                        <p class="text-sm text-gray-500">Cantidad: <span th:text="${alquilerImp.cantidad}">1</span></p>
+                                        <p class="text-sm text-gray-500">Fecha: <span th:text="${alquilerImp.alquiler.fechaAlquiler}">01/01/2025</span></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span th:if="${alquilerImp.estadoDevolucion == 'Devuelto'}" class="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium block mb-1">Devuelto</span>
+                                    <span th:if="${alquilerImp.estadoDevolucion == 'Pendiente'}" class="bg-yellow-500 text-white text-xs px-3 py-1 rounded-full font-medium block mb-1">Pendiente</span>
+                                    <span th:if="${alquilerImp.estadoDevolucion == 'Entregado'}" class="bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-medium block mb-1">Entregado</span>
+                                </div>
+                            </div>
+
+                            <div th:if="${historialImplementos == null or historialImplementos.isEmpty()}" class="col-span-2 text-center text-gray-500 py-4">
+                                No has alquilado implementos.
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- Resumen e Información Importante -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Resumen</h3>
+                    <div class="flex items-start gap-2 text-sm text-gray-600 mb-2">
+                        <i class="far fa-clock mt-1"></i>
+                        <div>
+                            <p class="font-medium">Horario de Atención:</p>
+                            <p>Lunes a Domingo 6:00 AM - 11:00 PM</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm text-gray-600">
+                        <i class="far fa-calendar-alt mt-1"></i>
+                        <div>
+                            <p class="font-medium">Reservas:</p>
+                            <p>Mínimo 1 Hora de anticipación</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i> Información Importante
+                    </h3>
+                    <div class="flex items-start gap-2 text-sm text-gray-600">
+                        <i class="fas fa-phone-alt mt-1"></i>
+                        <div>
+                            <p class="font-medium">Contacto:</p>
+                            <p>999 688 777 - pedropable@canchas.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

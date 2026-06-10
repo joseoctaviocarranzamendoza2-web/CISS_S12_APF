@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Reserva - Cliente</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .bg-teal-dark { background-color: #115e59; }
+        body { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-gray-800 font-sans">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-teal-dark text-white flex flex-col transition-all duration-300">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fas fa-futbol"></i> Canchas
+            </h2>
+        </div>
+        <nav class="flex-1 mt-6">
+            <a th:href="@{/cliente/dashboard}" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="fas fa-th-large w-5 text-center"></i> Dashboard
+            </a>
+            <a th:href="@{/cliente/reservar}" class="flex items-center gap-3 px-6 py-3 bg-white/10 border-l-4 border-white">
+                <i class="far fa-calendar-alt w-5 text-center"></i> Nueva Reserva
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="fas fa-history w-5 text-center"></i> Historial de Alquileres
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="far fa-credit-card w-5 text-center"></i> Pagos
+            </a>
+            <a href="#" class="flex items-center gap-3 px-6 py-3 hover:bg-white/5 transition-colors">
+                <i class="fas fa-cog w-5 text-center"></i> Configuración
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-semibold text-gray-700">Agendar Nueva Reserva</h1>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="font-medium" th:text="${usuario != null ? usuario.nombreCompleto : 'Cliente'}">Cliente</span>
+                </div>
+                <a th:href="@{/logout}" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Form Content -->
+        <div class="p-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-3xl mx-auto">
+                
+                <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2">Detalles de la Reserva</h2>
+                
+                <form th:action="@{/cliente/reservar}" method="post" class="space-y-6">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Seleccione una Cancha</label>
+                        <select name="codigoCampo" required class="w-full border border-gray-300 rounded-md px-4 py-3 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                            <option value="">-- Seleccionar Cancha --</option>
+                            <option th:each="campo : ${campos}" 
+                                    th:value="${campo.codigoCampo}" 
+                                    th:text="${campo.nombreCampo + ' - S/ ' + campo.precioHora + ' / Hora (' + campo.tipoCesped + ')'}">
+                                Cancha 001
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha del Alquiler</label>
+                            <input type="date" name="fechaAlquiler" required class="w-full border border-gray-300 rounded-md px-4 py-3 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Inicio</label>
+                            <input type="time" name="horaInicio" required class="w-full border border-gray-300 rounded-md px-4 py-3 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Total de Horas</label>
+                            <input type="number" name="totalHoras" min="1" max="5" value="1" required class="w-full border border-gray-300 rounded-md px-4 py-3 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                            <select name="metodoPago" required class="w-full border border-gray-300 rounded-md px-4 py-3 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all">
+                                <option value="Tarjeta">Tarjeta (Online)</option>
+                                <option value="Efectivo">Efectivo (Presencial)</option>
+                                <option value="Transferencia">Transferencia / Yape</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones Especiales (Opcional)</label>
+                        <textarea name="observaciones" rows="3" class="w-full border border-gray-300 rounded-md px-4 py-3 bg-white text-gray-800 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all" placeholder="Ej. Necesitaremos petos adicionales, etc."></textarea>
+                    </div>
+                    
+                    <!-- Alert/Info -->
+                    <div class="bg-blue-50 text-blue-800 p-4 rounded-lg flex items-start gap-3">
+                        <i class="fas fa-info-circle mt-1"></i>
+                        <p class="text-sm">Una vez envíes la solicitud, la reserva pasará a estado <strong>Pendiente</strong>. Si elegiste pago presencial, debes acercarte 15 minutos antes de la hora acordada para confirmar.</p>
+                    </div>
+
+                    <div class="flex justify-end gap-4 pt-4 border-t">
+                        <a th:href="@{/cliente/dashboard}" class="px-6 py-3 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancelar</a>
+                        <button type="submit" class="px-6 py-3 bg-teal-dark hover:bg-teal-700 text-white font-bold rounded-md shadow-md transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-check"></i> Confirmar Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
